@@ -1,0 +1,40 @@
+name: Deploy klein task
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy_target:
+        description: 'Environment to run against'
+        required: true
+        type: choice
+        options:
+          - dev
+          - outer
+          - pre
+          - pro
+          - test
+
+jobs:
+  klein_task_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - if: ${{ inputs.deploy_target == 'dev' }}
+        run: echo "TARGET_HOST=${{ secrets.KLEIN_DEV_HOST }}" >> $GITHUB_ENV
+      - if: ${{ inputs.deploy_target == 'outer' }}
+        run: echo "TARGET_HOST=${{ secrets.KLEIN_OUTER_HOST }}" >> $GITHUB_ENV
+      - if: ${{ inputs.deploy_target == 'pre' }}
+        run: echo "TARGET_HOST=${{ secrets.KLEIN_PRE_HOST }}" >> $GITHUB_ENV
+      - if: ${{ inputs.deploy_target == 'pro' }}
+        run: echo "TARGET_HOST=${{ secrets.KLEIN_PRO_HOST }}" >> $GITHUB_ENV
+      - if: ${{ inputs.deploy_target == 'test' }}
+        run: echo "TARGET_HOST=${{ secrets.KLEIN_TEST_HOST }}" >> $GITHUB_ENV
+
+      - uses: actions/checkout@v2
+      - name: deploy
+        run: |
+          echo ${{ env.TARGET_HOST }}
+          echo ${{ inputs.deploy_target }}
+#          ssh -o StrictHostKeyChecking=no ${{secrets.HOST_NAME}}@${{ env.TARGET_HOST }} 'mkdir -p ~/bsc_sh/klein-task/'
+#          scp scripts/sh/restart_dev.sh ${{secrets.HOST_NAME}}@${{ env.TARGET_HOST }}:~/bsc_sh/klein-task/
+#          scp docker-compose-klein-task-dev.yml ${{secrets.HOST_NAME}}@${{ env.TARGET_HOST }}:~/bsc_sh/klein-task/
+#          ssh -o StrictHostKeyChecking=no ${{secrets.HOST_NAME}}@${{ env.TARGET_HOST }} "cd ~/bsc_sh/klein-task && sh restart_dev.sh ${{ inputs.deploy_target }}"
